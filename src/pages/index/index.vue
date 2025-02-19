@@ -32,14 +32,30 @@ onLoad(() => {
 })
 
 const guessRef = ref<XtxGuessInstance>()
+//触底
 const onScrolltolower = () => {
   guessRef.value?.getMore()
+}
+//下拉刷新状态
+const isTriggered = ref(false)
+const onRefresherrefresh = async () => {
+  isTriggered.value = true
+  guessRef.value?.resetData()
+  await Promise.all([getBannerList(), getHomeCategory(), getHotList()])
+  isTriggered.value = false
 }
 </script>
 
 <template>
   <CustomNavbar />
-  <scroll-view @scrolltolower="onScrolltolower" class="scroll-view" scroll-y>
+  <scroll-view
+    @scrolltolower="onScrolltolower"
+    @refresherrefresh="onRefresherrefresh"
+    class="scroll-view"
+    :refresher-triggered="isTriggered"
+    scroll-y
+    refresher-enabled
+  >
     <XtxSwiper :list="bannerList" />
     <CategoryPanel :list="categoryList" />
     <HotPanel :list="hotList" />
