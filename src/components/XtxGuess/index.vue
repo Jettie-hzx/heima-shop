@@ -4,13 +4,28 @@ import type { GuessItem } from '@/types/home'
 import { onMounted, ref } from 'vue'
 
 const guessList = ref<GuessItem[]>([])
-
+const pageParams = {
+  page: 1,
+  pageSize: 10
+}
+const finish = ref(false)
 const getHomeGoodsGuessLikeData = async () => {
-  const { result } = await getHomeGoodsGuessLikeAPI()
-  guessList.value = result.items
+  if (finish.value) {
+    return uni.showToast({ icon: 'none', title: '没有更多数据了~' })
+  }
+  const { result } = await getHomeGoodsGuessLikeAPI(pageParams)
+  guessList.value.push(...result.items)
+  if (pageParams.page < result.pages) {
+    pageParams.page++
+  } else {
+    finish.value = true
+  }
 }
 onMounted(() => {
   getHomeGoodsGuessLikeData()
+})
+defineExpose({
+  getMore: getHomeGoodsGuessLikeData
 })
 </script>
 <template>
@@ -26,14 +41,14 @@ onMounted(() => {
       :url="`/pages/goods/goods?id=${item.id}`"
     >
       <image class="image" mode="aspectFill" :src="item.picture"></image>
-      <view class="name"> {{ item.desc }} </view>
+      <view class="name"> {{ item.name }} </view>
       <view class="price">
         <text class="small">¥</text>
         <text>{{ item.price }}</text>
       </view>
     </navigator>
   </view>
-  <view class="loading-text"> 正在加载... </view>
+  <view class="loading-text"> {{ finish ? '没有更多数据~' : '正在加载...' }} </view>
 </template>
 
 <style lang="scss">
