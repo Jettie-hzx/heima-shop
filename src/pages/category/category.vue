@@ -5,6 +5,7 @@ import type { CategoryTopItem } from '@/types/category'
 import type { BannerItem } from '@/types/home'
 import { onLoad } from '@dcloudio/uni-app'
 import { computed, ref } from 'vue'
+import CategorySkeleton from './components/CategorySkeleton.vue'
 
 const bannerList = ref<BannerItem[]>([])
 const getBannerList = async () => {
@@ -22,14 +23,15 @@ const activeIndex = ref(0)
 const subCategoryList = computed(() => {
   return categoryList.value[activeIndex.value]?.children || []
 })
-onLoad(() => {
-  getBannerList()
-  getCategoryTopData()
+const isFinish = ref(false)
+onLoad(async () => {
+  await Promise.all([getBannerList(), getCategoryTopData()])
+  isFinish.value = true
 })
 </script>
 
 <template>
-  <view class="viewport">
+  <view class="viewport" v-if="isFinish">
     <!-- 搜索框 -->
     <view class="search">
       <view class="input">
@@ -80,6 +82,7 @@ onLoad(() => {
       </scroll-view>
     </view>
   </view>
+  <CategorySkeleton v-else />
 </template>
 
 <style lang="scss">
