@@ -7,7 +7,7 @@ import HomeSkeleton from './components/HomeSkeleton.vue'
 import type { BannerItem, CategoryItem, HotItem } from '@/types/home'
 import { getHomeBannerAPI, getHomeCategoryAPI, getHomeHotAPI } from '@/services/home'
 import { onLoad } from '@dcloudio/uni-app'
-import type { XtxGuessInstance } from '@/types/components'
+import { useGuessList } from '@/hooks/useGuessList'
 
 const bannerList = ref<BannerItem[]>([])
 const getBannerList = async () => {
@@ -34,11 +34,7 @@ onLoad(async () => {
   isLoading.value = false
 })
 
-const guessRef = ref<XtxGuessInstance>()
-//触底
-const onScrolltolower = () => {
-  guessRef.value?.getMore()
-}
+const { guessRef, onScrolltolower } = useGuessList()
 //下拉刷新状态
 const isTriggered = ref(false)
 const onRefresherrefresh = async () => {
