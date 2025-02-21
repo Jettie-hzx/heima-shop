@@ -50,6 +50,10 @@ const openPopup = (name: typeof popupName.value) => {
   popupName.value = name
   popup.value?.open()
 }
+
+const goLogin = () => {
+  uni.navigateTo({ url: '/pages/login/login' })
+}
 </script>
 
 <template>
@@ -161,7 +165,7 @@ const openPopup = (name: typeof popupName.value) => {
     </view>
     <view class="buttons">
       <view class="addcart"> 加入购物车 </view>
-      <view class="buynow"> 立即购买 </view>
+      <view class="buynow" @tap="goLogin"> 立即购买 </view>
     </view>
   </view>
 </template>
