@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { useGuessList } from '@/hooks/useGuessList'
+import { useMemberStore } from '@/stores'
+import { ref } from 'vue'
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getWindowInfo()
@@ -11,12 +13,39 @@ const orderTypes = [
   { type: 4, text: '待评价', icon: 'icon-comment' }
 ]
 const { guessRef, onScrolltolower } = useGuessList()
+
+const scrollTop = ref(0)
+const onScroll: UniHelper.ScrollViewOnScroll = (ev) => {
+  scrollTop.value = ev.detail.scrollTop
+  intoView.value = ''
+}
+//const scrollViewRef = ref<UniHelper.ScrollView>()
+const intoView = ref('')
+const onBackTop = () => {
+  intoView.value = 'profile'
+}
+const memberStore = useMemberStore()
 </script>
 
 <template>
-  <scroll-view @scrolltolower="onScrolltolower" class="viewport" scroll-y enable-back-to-top>
+  <view class="top-nav">
+    <view :style="{ height: safeAreaInsets!.top + 'px' }"></view>
+    <view v-if="scrollTop > 100" class="top-my">我的</view>
+  </view>
+  <view v-if="scrollTop > 600" class="back-top" @tap="onBackTop">
+    <text class="icon-arrow"></text>
+  </view>
+  <scroll-view
+    @scrolltolower="onScrolltolower"
+    @scroll="onScroll"
+    :style="{ paddingTop: safeAreaInsets!.top + 'px' }"
+    class="viewport"
+    scroll-y
+    :scroll-into-view="intoView"
+    scroll-with-animation
+  >
     <!-- 个人资料 -->
-    <view class="profile" :style="{ paddingTop: safeAreaInsets!.top + 'px' }">
+    <view class="profile" id="profile">
       <!-- 情况1：已登录 -->
       <view class="overview" v-if="true">
         <navigator url="/pagesMember/profile/profile" hover-class="none">
@@ -92,17 +121,51 @@ page {
   overflow: hidden;
   background-color: #f7f7f8;
 }
-
+.top-nav {
+  width: 100%;
+  position: fixed;
+  z-index: 999;
+  // top: 200rpx;
+  background-image: url(https://pcapi-xiaotuxian-front-devtest.itheima.net/miniapp/images/center_bg.png);
+  background-size: 100% auto;
+  color: #fff;
+}
+.top-my {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 85rpx;
+}
 .viewport {
   height: 100%;
   background-repeat: no-repeat;
   background-image: url(https://pcapi-xiaotuxian-front-devtest.itheima.net/miniapp/images/center_bg.png);
+
   background-size: 100% auto;
 }
-
+.back-top {
+  width: 100rpx;
+  height: 100rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #eee;
+  color: #333;
+  border-radius: 50%;
+  position: fixed;
+  right: 35rpx;
+  bottom: 45rpx;
+  z-index: 999;
+}
+.icon-arrow {
+  width: 0;
+  height: 0;
+  border-left: 20rpx solid transparent;
+  border-right: 20rpx solid transparent;
+  border-bottom: 25rpx solid #333;
+}
 /* 用户信息 */
 .profile {
-  margin-top: 20rpx;
   position: relative;
 
   .overview {
