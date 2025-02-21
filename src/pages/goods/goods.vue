@@ -7,20 +7,20 @@ import ServicePanel from './components/ServicePanel.vue'
 import AddressPanel from './components/AddressPanel.vue'
 
 // 获取屏幕边界到安全区域距离
-const { safeAreaInsets } = uni.getSystemInfoSync()
+const { safeAreaInsets } = uni.getWindowInfo()
 
 //接收页面参数
-const query = defineProps<{
-  id: string
-}>()
+// const query = defineProps<{
+//   id: string
+// }>()
 
 const goods = ref<GoodsResult>()
-const getGoodsData = async () => {
-  const res = await getGoodsByIdAPI(query.id)
+const getGoodsData = async (id: string) => {
+  const res = await getGoodsByIdAPI(id)
   goods.value = res.result
 }
-onLoad(() => {
-  getGoodsData()
+onLoad((options) => {
+  getGoodsData(options!.id)
 })
 
 //轮播图交互
