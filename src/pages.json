@@ -103,6 +103,14 @@
           "style": {
             "navigationBarTitleText": "设置"
           }
+        },
+        {
+          "path": "profile/profile",
+          "style": {
+            "navigationBarTitleText": "profile",
+            "navigationStyle": "custom",
+            "navigationBarTextStyle": "white"
+          }
         }
       ]
     }
