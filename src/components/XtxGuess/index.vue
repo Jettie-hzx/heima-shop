@@ -30,6 +30,7 @@ const resetData = () => {
   guessList.value = []
   finish.value = false
 }
+
 defineExpose({
   getMore: getHomeGoodsGuessLikeData,
   resetData
