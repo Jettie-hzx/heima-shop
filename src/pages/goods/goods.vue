@@ -2,9 +2,13 @@
 import { getGoodsByIdAPI } from '@/services/goods'
 import type { GoodsResult } from '@/types/goods'
 import { onLoad } from '@dcloudio/uni-app'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import ServicePanel from './components/ServicePanel.vue'
 import AddressPanel from './components/AddressPanel.vue'
+import type {
+  SkuPopupLocaldata,
+  SkuPopupInstance
+} from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getWindowInfo()
@@ -15,10 +19,55 @@ const { safeAreaInsets } = uni.getWindowInfo()
 // }>()
 
 const goods = ref<GoodsResult>()
+
+//是否显示sku组件
+const isShowSKU = ref(false)
+//商品信息
+const localdata = ref({} as SkuPopupLocaldata)
 const getGoodsData = async (id: string) => {
-  const res = await getGoodsByIdAPI(id)
-  goods.value = res.result
+  const { result } = await getGoodsByIdAPI(id)
+  goods.value = result
+  localdata.value = {
+    _id: result.id,
+    name: result.name,
+    goods_thumb: result.mainPictures[0],
+    spec_list: result.specs.map((item) => ({
+      name: item.name,
+      list: item.values
+    })),
+    sku_list: result.skus.map((item) => ({
+      _id: item.id,
+      goods_id: result.id,
+      goods_name: result.name,
+      image: item.picture,
+      price: item.price * 100,
+      stock: item.inventory,
+      sku_name_arr: item.specs.map((v) => v.valueName)
+    }))
+  }
+  //
 }
+
+enum SKUMode {
+  Both = 1,
+  Cart = 2,
+  Buy = 3
+}
+const mode = ref<SKUMode>(SKUMode.Cart)
+// 打开SKU弹窗修改按钮模式
+const openSkuPopup = (val: SKUMode) => {
+  // 显示SKU弹窗
+  isShowSKU.value = true
+  // 修改按钮模式
+  mode.value = val
+}
+
+// SKU组件实例
+const skuPopupRef = ref<SkuPopupInstance>()
+// 计算被选中的值
+const selectArrText = computed(() => {
+  return skuPopupRef.value?.selectArr?.join(' ').trim() || '请选择商品规格'
+})
 onLoad((options) => {
   getGoodsData(options!.id)
 })
@@ -50,13 +99,23 @@ const openPopup = (name: typeof popupName.value) => {
   popupName.value = name
   popup.value?.open()
 }
-
-const goLogin = () => {
-  uni.navigateTo({ url: '/pages/login/login' })
-}
 </script>
 
 <template>
+  <!-- SKU弹窗组件 -->
+  <vk-data-goods-sku-popup
+    v-model="isShowSKU"
+    :localdata="localdata"
+    :mode="mode"
+    add-cart-background-color="#FFA868"
+    buy-now-background-color="#27BA9B"
+    ref="skuPopupRef"
+    :actived-style="{
+      color: '#27BA9B',
+      borderColor: '#27BA9B',
+      backgroundColor: '#E9F8F5'
+    }"
+  />
   <scroll-view scroll-y class="viewport">
     <!-- 基本信息 -->
     <view class="goods">
@@ -86,9 +145,9 @@ const goLogin = () => {
 
       <!-- 操作面板 -->
       <view class="action">
-        <view class="item arrow">
+        <view @tap="openSkuPopup(SKUMode.Both)" class="item arrow">
           <text class="label">选择</text>
-          <text class="text ellipsis"> 请选择商品规格 </text>
+          <text class="text ellipsis"> {{ selectArrText }} </text>
         </view>
         <view @tap="openPopup('address')" class="item arrow">
           <text class="label">送至</text>
@@ -164,8 +223,8 @@ const goLogin = () => {
       </navigator>
     </view>
     <view class="buttons">
-      <view class="addcart"> 加入购物车 </view>
-      <view class="buynow" @tap="goLogin"> 立即购买 </view>
+      <view class="addcart" @tap="openSkuPopup(SKUMode.Cart)"> 加入购物车 </view>
+      <view class="buynow" @tap="openSkuPopup(SKUMode.Buy)"> 立即购买 </view>
     </view>
   </view>
 </template>
@@ -312,6 +371,7 @@ page {
     .text {
       flex: 1;
       -webkit-line-clamp: 1;
+      line-clamp: 1;
     }
   }
 }
