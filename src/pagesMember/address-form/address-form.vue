@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { postMemberAddressAPI } from '@/services/address'
+import { getMemberAddressByIdAPI, postMemberAddressAPI } from '@/services/address'
+import { onLoad } from '@dcloudio/uni-app'
 import { ref } from 'vue'
 //获取页面参数
 const query = defineProps<{
@@ -18,6 +19,17 @@ const form = ref({
   address: '', // 详细地址
   isDefault: 0 // 默认地址，1为是，0为否
 })
+
+const getMemberAddressByIdData = async () => {
+  if (query.id) {
+    const res = await getMemberAddressByIdAPI(query.id)
+    Object.assign(form.value, res.result)
+  }
+}
+onLoad(() => {
+  getMemberAddressByIdData()
+})
+
 const onRegionChange: UniHelper.RegionPickerOnChange = (ev) => {
   console.log(ev.detail)
   form.value.fullLocation = ev.detail.value.join(' ')
