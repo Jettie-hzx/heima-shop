@@ -72,6 +72,16 @@ const selectedCartListCount = computed(() => {
 const selectedCartListMoney = computed(() => {
   return selectedCartList.value.reduce((sum, item) => sum + item.count * item.nowPrice, 0)
 })
+
+const gotoPayment = () => {
+  if (selectedCartListCount.value === 0) {
+    return uni.showToast({
+      icon: 'none',
+      title: '请选择商品'
+    })
+  }
+  uni.navigateTo({ url: '/pagesOrder/create/create' })
+}
 </script>
 
 <template>
@@ -142,7 +152,11 @@ const selectedCartListMoney = computed(() => {
         <text class="text">合计:</text>
         <text class="amount">{{ selectedCartListMoney }}</text>
         <view class="button-grounp">
-          <view class="button payment-button" :class="{ disabled: !selectedCartListCount }">
+          <view
+            @tap="gotoPayment"
+            class="button payment-button"
+            :class="{ disabled: !selectedCartListCount }"
+          >
             去结算({{ selectedCartListCount }})
           </view>
         </view>
