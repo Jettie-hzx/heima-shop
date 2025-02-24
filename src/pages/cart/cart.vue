@@ -60,6 +60,18 @@ const onChangeSelectedAll = () => {
   })
   putMemberCartSelectedAPI({ selected: _isSelectedAll })
 }
+
+const selectedCartList = computed(() => {
+  return cartList.value.filter((v) => v.selected)
+})
+
+const selectedCartListCount = computed(() => {
+  return selectedCartList.value.reduce((sum, item) => sum + item.count, 0)
+})
+
+const selectedCartListMoney = computed(() => {
+  return selectedCartList.value.reduce((sum, item) => sum + item.count * item.nowPrice, 0)
+})
 </script>
 
 <template>
@@ -128,9 +140,11 @@ const onChangeSelectedAll = () => {
       <view class="toolbar">
         <text class="all" @tap="onChangeSelectedAll" :class="{ checked: isSelectedAll }">全选</text>
         <text class="text">合计:</text>
-        <text class="amount">100</text>
+        <text class="amount">{{ selectedCartListMoney }}</text>
         <view class="button-grounp">
-          <view class="button payment-button" :class="{ disabled: true }"> 去结算(10) </view>
+          <view class="button payment-button" :class="{ disabled: !selectedCartListCount }">
+            去结算({{ selectedCartListCount }})
+          </view>
         </view>
       </view>
     </template>
