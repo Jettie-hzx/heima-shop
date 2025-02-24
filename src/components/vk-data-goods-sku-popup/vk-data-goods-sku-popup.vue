@@ -1,4 +1,4 @@
-<!-- 
+<!--
 【开箱即用】商品sku选择器组件豪华独立版（打造uni插件市场功能最全的SKU选择器组件）
 插件名称：vk-data-goods-sku-popup
 插件类型：业务型数据驱动组件
@@ -228,7 +228,7 @@ export default {
 			type: String,
 			default: '默认'
 		},
-		// 模式 1:都显示  2:只显示购物车 3:只显示立即购买 4:显示缺货按钮 默认 1
+		/** 按钮模式 1:都显示 2:只显示购物车 3:只显示立即购买 */
 		mode: {
 			type: Number,
 			default: 1

@@ -7,8 +7,11 @@ import ServicePanel from './components/ServicePanel.vue'
 import AddressPanel from './components/AddressPanel.vue'
 import type {
   SkuPopupLocaldata,
-  SkuPopupInstance
+  SkuPopupInstance,
+  SkuPopupEvent
 } from '@/components/vk-data-goods-sku-popup/vk-data-goods-sku-popup'
+import { postMemberCartAPI } from '@/services/cart'
+import { useMemberStore } from '@/stores'
 
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getWindowInfo()
@@ -53,7 +56,7 @@ enum SKUMode {
   Cart = 2,
   Buy = 3
 }
-const mode = ref<SKUMode>(SKUMode.Cart)
+const mode = ref<SKUMode>(SKUMode.Both)
 // 打开SKU弹窗修改按钮模式
 const openSkuPopup = (val: SKUMode) => {
   // 显示SKU弹窗
@@ -99,6 +102,18 @@ const openPopup = (name: typeof popupName.value) => {
   popupName.value = name
   popup.value?.open()
 }
+
+const onAddCart = async (ev: SkuPopupEvent) => {
+  const memberStore = useMemberStore()
+  if (!memberStore.profile?.token) {
+    uni.showToast({ icon: 'fail', title: '请先登录' })
+    uni.navigateTo({ url: '/pages/login/login' })
+  } else {
+    await postMemberCartAPI({ skuId: ev._id, count: ev.buy_num })
+    uni.showToast({ title: '添加成功' })
+    isShowSKU.value = false
+  }
+}
 </script>
 
 <template>
@@ -115,6 +130,7 @@ const openPopup = (name: typeof popupName.value) => {
       borderColor: '#27BA9B',
       backgroundColor: '#E9F8F5'
     }"
+    @add-cart="onAddCart"
   />
   <scroll-view scroll-y class="viewport">
     <!-- 基本信息 -->
