@@ -1,4 +1,4 @@
-import { Component } from '@uni-helper/uni-app-types'
+import type { Component } from 'vue'
 import VkDataGoodsSkuPopup from './vk-data-goods-sku-popup.vue'
 //Component 类型大致会包含 uni-app 组件的生命周期、通用方法和基础属性等类型定义。
 /** SKU 弹出层 */
@@ -141,6 +141,6 @@ export type SkuPopupEvent = SkuPopupSkuItem & {
 /** 全局组件类型声明 */
 declare module 'vue' {
   export interface GlobalComponents {
-    VkDataGoodsSkuPopup: typeof VkDataGoodsSkuPopup
+    VkDataGoodsSkuPopup: SkuPopup
   }
 }
