@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getMemberCartAPI } from '@/services/cart'
+import { deleteMemberCartAPI, getMemberCartAPI } from '@/services/cart'
 import { useMemberStore } from '@/stores'
 import type { CartItem } from '@/types/cart'
 import { onShow } from '@dcloudio/uni-app'
@@ -19,6 +19,18 @@ onShow(() => {
     getMemberCartData()
   }
 })
+
+const onDeleteCart = (skuId: string) => {
+  uni.showModal({
+    content: '是否删除该商品?',
+    success: async ({ confirm }) => {
+      if (confirm) {
+        await deleteMemberCartAPI({ ids: [skuId] })
+        getMemberCartData()
+      }
+    }
+  })
+}
 </script>
 
 <template>
@@ -54,15 +66,13 @@ onShow(() => {
               </navigator>
               <!-- 商品数量 -->
               <view class="count">
-                <text class="text">-</text>
-                <input class="input" type="number" :value="item.count.toString()" />
-                <text class="text">+</text>
+                <vk-data-input-number-box v-model="item.count" :min="1" />
               </view>
             </view>
             <!-- 右侧删除按钮 -->
             <template #right>
               <view class="cart-swipe-right">
-                <button class="button delete-button">删除</button>
+                <button @tap="onDeleteCart(item.skuId)" class="button delete-button">删除</button>
               </view>
             </template>
           </uni-swipe-action-item>
@@ -175,8 +185,8 @@ onShow(() => {
     }
 
     .picture {
-      width: 170rpx;
-      height: 170rpx;
+      width: 180rpx;
+      height: 180rpx;
     }
 
     .meta {
@@ -188,13 +198,13 @@ onShow(() => {
     }
 
     .name {
-      height: 72rpx;
+      height: 70rpx;
       font-size: 26rpx;
       color: #444;
     }
 
     .attrsText {
-      line-height: 1.8;
+      line-height: 1.5;
       padding: 0 15rpx;
       font-size: 24rpx;
       align-self: flex-start;
@@ -219,7 +229,7 @@ onShow(() => {
     // 商品数量
     .count {
       position: absolute;
-      bottom: 20rpx;
+      bottom: 16rpx;
       right: 5rpx;
 
       display: flex;
