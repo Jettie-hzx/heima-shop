@@ -11,6 +11,16 @@ import type { CartItem } from '@/types/cart'
 import { onShow } from '@dcloudio/uni-app'
 import { computed, ref } from 'vue'
 
+const props = defineProps<{
+  normalCart: boolean
+}>()
+const paddingBottom = ref(0)
+if (props.normalCart) {
+  const { safeAreaInsets } = uni.getWindowInfo()
+  paddingBottom.value = safeAreaInsets.bottom
+}
+
+//const toolbarBottom=computed
 const memberStore = useMemberStore()
 
 //获取购物车数据
@@ -85,7 +95,7 @@ const gotoPayment = () => {
 </script>
 
 <template>
-  <scroll-view scroll-y class="scroll-view">
+  <scroll-view scroll-y class="scroll-view" :style="{ marginBottom: paddingBottom + 'px' }">
     <!-- 已登录: 显示购物车 -->
     <template v-if="memberStore.profile">
       <!-- 购物车列表 -->
@@ -147,7 +157,7 @@ const gotoPayment = () => {
         </navigator>
       </view>
       <!-- 吸底工具栏 -->
-      <view class="toolbar">
+      <view class="toolbar" :style="{ '--toolbar-bottom': paddingBottom + 'px' }">
         <text class="all" @tap="onChangeSelectedAll" :class="{ checked: isSelectedAll }">全选</text>
         <text class="text">合计:</text>
         <text class="amount">{{ selectedCartListMoney }}</text>
@@ -383,7 +393,7 @@ const gotoPayment = () => {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: var(--window-bottom);
+  bottom: var(--toolbar-bottom);
   z-index: 1;
 
   height: 100rpx;

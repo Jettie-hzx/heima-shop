@@ -1,5 +1,5 @@
 <template>
-  <CartMain />
+  <CartMain normal-cart />
 </template>
 
 <script setup lang="ts">
