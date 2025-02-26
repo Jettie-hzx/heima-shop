@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { useGuessList } from '@/hooks/useGuessList'
 import { OrderState, orderStateList } from '@/services/contant'
-import { getMemberOrderByIdAPI, getPayMockAPI, getPayWxPayMiniPayAPI } from '@/services/order'
+import {
+  getMemberOrderByIdAPI,
+  getMemberOrderConsignmentByIdAPI,
+  getPayMockAPI,
+  getPayWxPayMiniPayAPI
+} from '@/services/order'
 
 import type { OrderResult } from '@/types/order'
 import { onLoad, onReady } from '@dcloudio/uni-app'
@@ -86,10 +91,12 @@ const onTimeup = () => {
   order.value!.orderState = OrderState.YiQuXiao
 }
 
+//判断是否为开发环境
+const isDev = import.meta.env.DEV
 //订单支付
 const onOrderPay = async () => {
   //通过环境变量区分开发环境
-  if (import.meta.env.DEV) {
+  if (isDev) {
     //开发环境,模拟支付,修改订单状态为已支付
     await getPayMockAPI({ orderId: query.id })
   } else {
@@ -97,6 +104,15 @@ const onOrderPay = async () => {
     await wx.requestPayment(res.result)
   }
   uni.redirectTo({ url: `/pagesOrder/payment/payment?id=${query.id}` })
+}
+
+//模拟发货
+const onOrderSend = async () => {
+  if (isDev) {
+    await getMemberOrderConsignmentByIdAPI(query.id)
+    uni.showToast({ icon: 'success', title: '模拟发货完成' })
+    order.value!.orderState = OrderState.DaiShouHuo
+  }
 }
 </script>
 
@@ -148,7 +164,13 @@ const onOrderPay = async () => {
               再次购买
             </navigator>
             <!-- 待发货状态：模拟发货,开发期间使用,用于修改订单状态为已发货 -->
-            <view v-if="false" class="button"> 模拟发货 </view>
+            <view
+              v-if="isDev && order.orderState === OrderState.DaiFaHuo"
+              class="button"
+              @tap="onOrderSend"
+            >
+              模拟发货
+            </view>
           </view>
         </template>
       </view>
