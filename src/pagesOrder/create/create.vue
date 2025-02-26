@@ -1,5 +1,10 @@
 <script setup lang="ts">
-import { getMemberOrderPreAPI, getMemberOrderPreNowAPI, postMemberOrderAPI } from '@/services/order'
+import {
+  getMemberOrderPreAPI,
+  getMemberOrderPreNowAPI,
+  getMemberOrderRepurchaseByIdAPI,
+  postMemberOrderAPI
+} from '@/services/order'
 import { useAddressStore } from '@/stores'
 import type { OrderPreResult } from '@/types/order'
 import { onLoad } from '@dcloudio/uni-app'
@@ -12,13 +17,19 @@ const { safeAreaInsets } = uni.getSystemInfoSync()
 const query = defineProps<{
   skuId?: string
   count?: string
+  orderId?: string
 }>()
 const orderPre = ref<OrderPreResult>()
 const getMemberOrderPreData = async () => {
   let res
   if (query.skuId && query.count) {
+    //立即购买
     res = await getMemberOrderPreNowAPI({ skuId: query.skuId, count: query.count })
+  } else if (query.orderId) {
+    //再次购买
+    res = await getMemberOrderRepurchaseByIdAPI(query.orderId)
   } else {
+    //预付订单
     res = await getMemberOrderPreAPI()
   }
 
