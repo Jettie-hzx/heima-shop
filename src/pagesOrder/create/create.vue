@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { getMemberOrderPreAPI } from '@/services/order'
+import { useAddressStore } from '@/stores'
 import type { OrderPreResult } from '@/types/order'
 import { onLoad } from '@dcloudio/uni-app'
 import { computed, ref } from 'vue'
@@ -12,7 +13,10 @@ const getMemberOrderPreData = async () => {
   const res = await getMemberOrderPreAPI()
   orderPre.value = res.result
 }
-
+const addressStore = useAddressStore()
+const selectedAddress = computed(() => {
+  return addressStore.selectedAddress || orderPre.value?.userAddresses.find((v) => v.isDefault)
+})
 onLoad(() => {
   getMemberOrderPreData()
 })
@@ -32,19 +36,31 @@ const activeDelivery = computed(() => deliveryList.value[activeIndex.value])
 const onChangeDelivery: UniHelper.SelectorPickerOnChange = (ev) => {
   activeIndex.value = ev.detail.value
 }
+let lastClickTime = 0
+const onTap = () => {
+  const currentTime = Date.now()
+  if (currentTime - lastClickTime < 300) {
+    console.log('双击')
+    lastClickTime = 0
+  } else {
+    lastClickTime = currentTime
+  }
+}
 </script>
 
 <template>
   <scroll-view scroll-y class="viewport">
     <!-- 收货地址 -->
     <navigator
-      v-if="false"
+      v-if="selectedAddress"
       class="shipment"
       hover-class="none"
       url="/pagesMember/address/address?from=order"
     >
-      <view class="user"> 张三 13333333333 </view>
-      <view class="address"> 广东省 广州市 天河区 黑马程序员3 </view>
+      <view class="user"> {{ selectedAddress.receiver }} {{ selectedAddress.contact }} </view>
+      <view class="address">
+        {{ selectedAddress.fullLocation }} {{ selectedAddress.address }}
+      </view>
       <text class="icon icon-right"></text>
     </navigator>
     <navigator
@@ -116,7 +132,7 @@ const onChangeDelivery: UniHelper.SelectorPickerOnChange = (ev) => {
     <view class="total-pay symbol">
       <text class="number">{{ orderPre?.summary.totalPayPrice }}</text>
     </view>
-    <view class="button" :class="{ disabled: true }"> 提交订单 </view>
+    <view class="button" :class="{ disabled: true }" @tap="onTap"> 提交订单 </view>
   </view>
 </template>
 
