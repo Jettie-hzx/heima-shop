@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getMemberOrderPreAPI } from '@/services/order'
+import { getMemberOrderPreAPI, getMemberOrderPreNowAPI, postMemberOrderAPI } from '@/services/order'
 import { useAddressStore } from '@/stores'
 import type { OrderPreResult } from '@/types/order'
 import { onLoad } from '@dcloudio/uni-app'
@@ -8,9 +8,20 @@ import { computed, ref } from 'vue'
 // 获取屏幕边界到安全区域距离
 const { safeAreaInsets } = uni.getSystemInfoSync()
 
+//页面参数
+const query = defineProps<{
+  skuId?: string
+  count?: string
+}>()
 const orderPre = ref<OrderPreResult>()
 const getMemberOrderPreData = async () => {
-  const res = await getMemberOrderPreAPI()
+  let res
+  if (query.skuId && query.count) {
+    res = await getMemberOrderPreNowAPI({ skuId: query.skuId, count: query.count })
+  } else {
+    res = await getMemberOrderPreAPI()
+  }
+
   orderPre.value = res.result
 }
 const addressStore = useAddressStore()
@@ -45,6 +56,31 @@ const onTap = () => {
   } else {
     lastClickTime = currentTime
   }
+}
+enum PayChannel {
+  AliPay = 1,
+  WxPay = 2
+}
+enum PayType {
+  Online = 1,
+  Delivery = 2
+}
+//提交订单
+const onOrderSubmit = async () => {
+  if (!selectedAddress.value?.id) {
+    return uni.showToast({ icon: 'none', title: '请选择收货地址' })
+  }
+
+  const res = await postMemberOrderAPI({
+    addressId: selectedAddress.value.id,
+    buyerMessage: buyerMessage.value,
+    deliveryTimeType: activeDelivery.value.type,
+    goods: orderPre.value!.goods.map((v) => ({ count: v.count, skuId: v.skuId })),
+    payChannel: PayChannel.WxPay,
+    payType: PayType.Online
+  })
+  // 关闭当前页面，跳转到订单详情，传递订单id
+  uni.redirectTo({ url: `/pagesOrder/detail/detail?id=${res.result.id}` })
 }
 </script>
 
@@ -132,7 +168,9 @@ const onTap = () => {
     <view class="total-pay symbol">
       <text class="number">{{ orderPre?.summary.totalPayPrice }}</text>
     </view>
-    <view class="button" :class="{ disabled: true }" @tap="onTap"> 提交订单 </view>
+    <view class="button" :class="{ disabled: !selectedAddress?.id }" @tap="onOrderSubmit">
+      提交订单
+    </view>
   </view>
 </template>
 
